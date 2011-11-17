@@ -43,7 +43,7 @@ public class CkEditorDemo implements IEntryPoint {
     ckEditor.setText( "bala<i>\"la\\la\"</i>la\r\nfoooo" );
     ckEditor.setLayoutData( new GridData() );
     System.out.println( ckEditor.getText() );
-    //ckEditor.setBackground( display.getSystemColor( SWT.COLOR_BLUE ) );
+    ckEditor.setBackground( display.getSystemColor( SWT.COLOR_YELLOW ) );
     GridDataFactory.fillDefaults().grab( true, true ).applyTo( ckEditor );
     final ToolBar toolbar = new ToolBar( shell, SWT.FLAT );
     // Save button

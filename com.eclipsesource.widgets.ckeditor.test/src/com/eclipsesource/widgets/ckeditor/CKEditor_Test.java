@@ -39,6 +39,10 @@ public class CKEditor_Test extends TestCase {
     assertTrue( editor.getLayout() instanceof FillLayout );
   }
   
+  public void testBackgroundMode() {
+    assertEquals( SWT.INHERIT_FORCE, editor.getBackgroundMode() );
+  }
+  
 //  public void testGetChildren() {
 //    assertEquals( 0, editor.getChildren().length );
 //  }
