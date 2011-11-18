@@ -16,10 +16,12 @@ import org.eclipse.rwt.lifecycle.IEntryPoint;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.FontDialog;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Shell;
@@ -33,8 +35,8 @@ import com.eclipsesource.widgets.ckeditor.Style;
 public class CkEditorDemo implements IEntryPoint {
 
   public int createUI() {
-    Display display = new Display();
-    Shell shell = new Shell( display );
+    final Display display = new Display();
+    final Shell shell = new Shell( display );
     shell.setBounds( 10, 10, 800, 550 );
     shell.setText( "CkEditor Demo" );
     shell.setLayout( new GridLayout( 1, false ) );
@@ -104,6 +106,13 @@ public class CkEditorDemo implements IEntryPoint {
         Point point = toolbar.toDisplay( event.x, event.y );
         dropDownMenu.setLocation( point );
         dropDownMenu.setVisible( true );
+      }
+    } );
+    ToolItem fontBtn = new ToolItem( toolbar, SWT.PUSH );
+    fontBtn.setText( "default-Font" );
+    fontBtn.addSelectionListener( new SelectionAdapter() {
+      public void widgetSelected( SelectionEvent e ) {
+        ckEditor.setFont( new Font( display, new FontDialog( shell ).open() ) );
       }
     } );
     ToolItem removeBtn = new ToolItem( toolbar, SWT.NONE );

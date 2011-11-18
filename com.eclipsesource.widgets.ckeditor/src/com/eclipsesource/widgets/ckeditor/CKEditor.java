@@ -16,6 +16,8 @@ import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.browser.BrowserFunction;
 import org.eclipse.swt.browser.ProgressEvent;
 import org.eclipse.swt.browser.ProgressListener;
+import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Layout;
@@ -27,9 +29,11 @@ public class CKEditor extends Composite {
   private static final String URL = "/resources/ckeditor.html";
   private static final String READY_FUNCTION = "rap_ready";
   private String text = "";
+  private StringBuilder evalScript = null;
   Browser browser;
   boolean loaded = false;
   boolean ready = false;
+
   
   public CKEditor( Composite parent, int style ) {
     super( parent, style );
@@ -40,8 +44,8 @@ public class CKEditor extends Composite {
     addBrowserHandler();
   }
   
-  //////////////////////////////
-  // overwrite composite methods
+  ////////////////////
+  // overwrite methods
 
   @Override
   public void setLayout( Layout layout ) {
@@ -54,6 +58,13 @@ public class CKEditor extends Composite {
 //    return new Control[ 0 ];
 //  }
 
+  @Override
+  public void setFont( Font font ) {
+    super.setFont( font );
+    writeFont();
+  }
+
+
   //////
   // API
 
@@ -64,18 +75,14 @@ public class CKEditor extends Composite {
     this.text = text;
     this.ready = false;
     if( loaded ) {
-      browser.evaluate( getCodeSetText() );          
+      // special case: text can be set any time after load, event if not ready
+      browser.evaluate( getScriptSetText() );          
     }
   }
 
   public String getText() {
-    String result;
-    if( ready ) {
-      result = ( String )browser.evaluate( getCodeGetText() );
-    } else {
-      result = text;
-    }
-    return result;
+    readText();
+    return text;
   }
 
   public void applyStyle( Style style ) {
@@ -83,34 +90,46 @@ public class CKEditor extends Composite {
     if( style == null ) {
       SWT.error( SWT.ERROR_NULL_ARGUMENT );
     }
-    browser.evaluate( getCodeApplyStyle( style ) );
+    browser.evaluate( getScriptApplyStyle( style ) );
   }
 
   public void removeFormat() {
-    browser.evaluate( getCodeRemoveFormat() );
+    browser.evaluate( "rap.editor.execCommand( \"removeFormat\" );" );
   }
 
-  //////////////////
-  // browser handler
+  /////////////
+  // browser IO
   
   void onLoad() {
     if( loaded ) {
       throw new IllegalStateException( "Document loaded twice" ); 
     }
     loaded = true;
-    String code = getCodeCreateEditor();
+    String script = "rap.createEditor();";
     if( !text.equals( "" ) ) {
-      code += getCodeSetText();
+      script += getScriptSetText();
     }
-    browser.evaluate( code );
+    browser.evaluate( script );
   }
   
   void onReady() {
+    writeFont(); // CKEditor re-creates the document with every setData, loosing inline styles
+    writePendingScript();
     ready = true;
   }
   
-  ////////////
-  // internals
+  private void readText() {
+    if( ready ) {
+      text = ( String )browser.evaluate( "return rap.editor.getData();" );
+    }
+  }
+  
+  private void writeFont() {
+    evaluate( "rap.editor.document.getBody().setStyle( \"font\", \"" + getCssFont() + "\" );" );
+  }
+  
+  /////////
+  // helper
   
   private void addBrowserHandler() {
     browser.addProgressListener( new ProgressListener() {
@@ -127,24 +146,42 @@ public class CKEditor extends Composite {
       }
     };
   }
+
+  private void evaluate( String script ) {
+    if( ready ) {
+      browser.evaluate( script );
+    } else {
+      if( evalScript == null ) {
+        evalScript = new StringBuilder( script );
+      } else {
+        evalScript.append(  script );
+      }
+    }
+  }  
   
-  private String getCodeCreateEditor() {
-    return "rap.createEditor();";
+  private void writePendingScript() {
+    if( evalScript != null ) {
+      browser.evaluate( evalScript.toString() );
+      evalScript = null;
+    }
   }
 
-  private String getCodeSetText() {
+  private String getCssFont() {
+    StringBuilder result = new StringBuilder();
+    if( getFont() != null ) {
+      FontData data = getFont().getFontData()[ 0 ];
+      result.append( data.getHeight() );
+      result.append( "pt " );
+      result.append( escapeText( data.getName() ) );
+    }
+    return result.toString();
+  }
+
+  private String getScriptSetText() {
     return "rap.editor.setData( \"" + escapeText( text ) + "\" );";
   }
-  
-  private String getCodeGetText() {
-    return "return rap.editor.getData();";
-  }
-  
-  private String getCodeRemoveFormat() {
-    return "rap.editor.execCommand( \"removeFormat\" );";
-  }
 
-  private String getCodeApplyStyle( Style style ) {
+  private String getScriptApplyStyle( Style style ) {
     StringBuilder code = new StringBuilder();
     code.append( "var style = new CKEDITOR.style( " );
     code.append( style.toJSON() );

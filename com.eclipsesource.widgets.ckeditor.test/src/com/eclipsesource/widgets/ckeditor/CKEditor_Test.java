@@ -11,6 +11,7 @@ import junit.framework.TestCase;
 import org.eclipse.rap.rwt.testfixture.Fixture;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.browser.Browser;
+import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
@@ -188,7 +189,6 @@ public class CKEditor_Test extends TestCase {
     
     editor.applyStyle( style );
     
-    verify( editor.browser, times( 2 ) ).evaluate( anyString() );
     verify( editor.browser ).evaluate( contains( "var style = new CKEDITOR.style( {" ) );
     verify( editor.browser ).evaluate( contains( "\"element\":\"b\"" ) );
     verify( editor.browser ).evaluate( contains( "style.apply( rap.editor.document );" ) );
@@ -226,6 +226,39 @@ public class CKEditor_Test extends TestCase {
     editor.removeFormat();
     
     verify( editor.browser ).evaluate( contains( "rap.editor.execCommand( \"removeFormat\" );" ) );
+  }
+
+
+  public void testSetFontAfterReady() {
+    mockBrowser( editor );
+    editor.onLoad();
+    
+    editor.onReady();
+
+    String expected = "setStyle( \"font\"";
+    verify( editor.browser, times( 1 ) ).evaluate( contains( expected ) );
+  }
+
+  public void testSetFontFamilyAndSize() {
+    mockBrowser( editor );
+    editor.onLoad();
+    editor.onReady();
+
+    editor.setFont( new Font( display, "fantasy", 13, 0 ) );
+    
+    String expected = "setStyle( \"font\", \"13pt fantasy";
+    verify( editor.browser, times( 1 ) ).evaluate( contains( expected ) );
+  }
+  
+  public void testSetFontEscape() {
+    mockBrowser( editor );
+    editor.onLoad();
+    editor.onReady();
+    
+    editor.setFont( new Font( display, "\"courier new\"", 13, 0 ) );
+    
+    String expected = "setStyle( \"font\", \"13pt \\\"courier new\\\"";
+    verify( editor.browser, times( 1 ) ).evaluate( contains( expected ) );
   }
   
   /////////
