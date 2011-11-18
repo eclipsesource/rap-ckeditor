@@ -43,6 +43,7 @@ public class CkEditorDemo implements IEntryPoint {
     // CkEditor
     final CKEditor ckEditor = new CKEditor( shell, SWT.BORDER );
     ckEditor.setText( "bala<i>\"la\\la\"</i>la\r\nfoooo" );
+    ckEditor.applyStyle( Style.STRIKE );
     ckEditor.setLayoutData( new GridData() );
     System.out.println( ckEditor.getText() );
     ckEditor.setBackground( display.getSystemColor( SWT.COLOR_YELLOW ) );

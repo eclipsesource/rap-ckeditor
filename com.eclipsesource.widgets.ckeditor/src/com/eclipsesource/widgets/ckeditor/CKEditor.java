@@ -74,6 +74,7 @@ public class CKEditor extends Composite {
     }
     this.text = text;
     this.ready = false;
+    evalScript = null;
     if( loaded ) {
       // special case: text can be set any time after load, event if not ready
       browser.evaluate( getScriptSetText() );          
@@ -90,11 +91,11 @@ public class CKEditor extends Composite {
     if( style == null ) {
       SWT.error( SWT.ERROR_NULL_ARGUMENT );
     }
-    browser.evaluate( getScriptApplyStyle( style ) );
+    evaluate( getScriptApplyStyle( style ) );
   }
 
   public void removeFormat() {
-    browser.evaluate( "rap.editor.execCommand( \"removeFormat\" );" );
+    evaluate( "rap.editor.execCommand( \"removeFormat\" );" );
   }
 
   /////////////

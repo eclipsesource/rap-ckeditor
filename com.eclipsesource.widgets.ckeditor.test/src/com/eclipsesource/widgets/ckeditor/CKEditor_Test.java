@@ -208,16 +208,42 @@ public class CKEditor_Test extends TestCase {
     
   }
   
-//  public void testApplyStyleBeforeReady() {
-//    mockBrowser( editor );
-//    editor.onLoad();
-//    Style style = new Style( "b" );
-//    
-//    editor.applyStyle( style );
-//    
-//    verify( editor.browser, times( 0 ) ).evaluate( contains( "style.apply" ) );
-//  }
+  public void testApplyStyleBeforeReady() {
+    mockBrowser( editor );
+    editor.onLoad();
+    
+    editor.applyStyle( new Style( "b" ) );
+    
+    verify( editor.browser, times( 0 ) ).evaluate( contains( "style.apply" ) );
+  }
   
+  public void testRenderStyleOnReady() {
+    mockBrowser( editor );
+    editor.onLoad();
+    
+    editor.applyStyle( new Style( "b" ) );
+    editor.applyStyle( new Style( "c" ) );
+    editor.onReady();
+    
+    verify( editor.browser, times( 1 ) ).evaluate( contains( "style.apply" ) );
+    verify( editor.browser ).evaluate( contains( "\"element\":\"b\"" ) );
+    verify( editor.browser ).evaluate( contains( "\"element\":\"c\"" ) );
+  }
+  
+  public void testApplyStyleBeforeSetText() {
+    mockBrowser( editor );
+    editor.onLoad();
+    
+    editor.applyStyle( new Style( "b" ) );
+    editor.setText( "foo" );
+    editor.applyStyle( new Style( "c" ) );
+    editor.onReady();
+    
+    verify( editor.browser, times( 1 ) ).evaluate( contains( "style.apply" ) );
+    verify( editor.browser, times( 1 ) ).evaluate( contains( "\"element\":\"c\"" ) );
+    verify( editor.browser, times( 0 ) ).evaluate( contains( "\"element\":\"b\"" ) );
+  }
+
   public void testRemoveFormat() {
     mockBrowser( editor );
     editor.onLoad();
@@ -228,6 +254,25 @@ public class CKEditor_Test extends TestCase {
     verify( editor.browser ).evaluate( contains( "rap.editor.execCommand( \"removeFormat\" );" ) );
   }
 
+  public void testRemoveFormatBeforeReady() {
+    mockBrowser( editor );
+    editor.onLoad();
+    
+    editor.removeFormat();
+    
+    verify( editor.browser, times( 0 ) ).evaluate( contains( "\"removeFormat\" );" ) );
+  }
+  
+  public void testRenderRemoveFormatOnReady() {
+    mockBrowser( editor );
+    editor.onLoad();
+    
+    editor.removeFormat();
+    editor.onReady();
+    
+    verify( editor.browser, times( 1 ) ).evaluate( contains( "\"removeFormat\" );" ) );
+  }
+  
 
   public void testSetFontAfterReady() {
     mockBrowser( editor );
