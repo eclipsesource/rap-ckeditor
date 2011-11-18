@@ -150,13 +150,12 @@ public class CKEditor extends Composite {
 
   private void evaluate( String script ) {
     if( ready ) {
-      browser.evaluate( script );
+      browser.evaluate( "rap.editor.focus();" + script );
     } else {
       if( evalScript == null ) {
-        evalScript = new StringBuilder( script );
-      } else {
-        evalScript.append(  script );
-      }
+        evalScript = new StringBuilder( "rap.editor.focus();" );
+      } 
+      evalScript.append(  script );
     }
   }  
   

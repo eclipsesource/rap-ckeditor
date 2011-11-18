@@ -189,7 +189,7 @@ public class CKEditor_Test extends TestCase {
     
     editor.applyStyle( style );
     
-    verify( editor.browser ).evaluate( contains( "var style = new CKEDITOR.style( {" ) );
+    verify( editor.browser ).evaluate( contains( "focus();var style = new CKEDITOR.style( {" ) );
     verify( editor.browser ).evaluate( contains( "\"element\":\"b\"" ) );
     verify( editor.browser ).evaluate( contains( "style.apply( rap.editor.document );" ) );
   }
@@ -225,7 +225,7 @@ public class CKEditor_Test extends TestCase {
     editor.applyStyle( new Style( "c" ) );
     editor.onReady();
     
-    verify( editor.browser, times( 1 ) ).evaluate( contains( "style.apply" ) );
+    verify( editor.browser, times( 1 ) ).evaluate( contains( "focus();var style" ) );
     verify( editor.browser ).evaluate( contains( "\"element\":\"b\"" ) );
     verify( editor.browser ).evaluate( contains( "\"element\":\"c\"" ) );
   }
