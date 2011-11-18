@@ -29,7 +29,9 @@ public class CKEditor extends Composite {
   private static final String URL = "/resources/ckeditor.html";
   private static final String READY_FUNCTION = "rap_ready";
   private String text = "";
-  private StringBuilder evalScript = null;
+  private StringBuilder onReadyScript = null;
+  private StringBuilder onLoadScript = null;
+  private Style[] knownStyles;
   Browser browser;
   boolean loaded = false;
   boolean ready = false;
@@ -42,6 +44,7 @@ public class CKEditor extends Composite {
     this.setBackgroundMode( SWT.INHERIT_FORCE );
     browser.setUrl( URL );
     addBrowserHandler();
+    evalOnLoad( "rap.createEditor();" );
   }
   
   ////////////////////
@@ -64,7 +67,6 @@ public class CKEditor extends Composite {
     writeFont();
   }
 
-
   //////
   // API
 
@@ -74,11 +76,8 @@ public class CKEditor extends Composite {
     }
     this.text = text;
     this.ready = false;
-    evalScript = null;
-    if( loaded ) {
-      // special case: text can be set any time after load, event if not ready
-      browser.evaluate( getScriptSetText() );          
-    }
+    onReadyScript = null;
+    writeText();
   }
 
   public String getText() {
@@ -86,16 +85,25 @@ public class CKEditor extends Composite {
     return text;
   }
 
+  public void setKnownStyles( Style[] styles ) {
+    knownStyles = styles;
+    writeKnownStyles();      
+  }
+
   public void applyStyle( Style style ) {
     // TODO [tb] : support applyStyle, removeFormat, removeStyle before ready
     if( style == null ) {
       SWT.error( SWT.ERROR_NULL_ARGUMENT );
     }
-    evaluate( getScriptApplyStyle( style ) );
+    StringBuilder code = new StringBuilder();
+    code.append( "var style = " );
+    code.append( getScriptNewStyle( style ) );
+    code.append( ";style.apply( rap.editor.document );" );
+    evalOnReady( code.toString() );
   }
 
   public void removeFormat() {
-    evaluate( "rap.editor.execCommand( \"removeFormat\" );" );
+    evalOnReady( "rap.editor.execCommand( \"removeFormat\" );" );
   }
 
   /////////////
@@ -105,30 +113,44 @@ public class CKEditor extends Composite {
     if( loaded ) {
       throw new IllegalStateException( "Document loaded twice" ); 
     }
+    evalOnLoadScript();
     loaded = true;
-    String script = "rap.createEditor();";
-    if( !text.equals( "" ) ) {
-      script += getScriptSetText();
-    }
-    browser.evaluate( script );
   }
   
   void onReady() {
     writeFont(); // CKEditor re-creates the document with every setData, loosing inline styles
-    writePendingScript();
+    evalOnReadyScript();
     ready = true;
   }
-  
+
+  private void writeText() {
+    evalOnLoad( "rap.editor.setData( \"" + escapeText( text ) + "\" );" );
+  }
+
   private void readText() {
     if( ready ) {
       text = ( String )browser.evaluate( "return rap.editor.getData();" );
     }
   }
-  
+
   private void writeFont() {
-    evaluate( "rap.editor.document.getBody().setStyle( \"font\", \"" + getCssFont() + "\" );" );
+    evalOnReady( "rap.editor.document.getBody().setStyle( \"font\", \"" + getCssFont() + "\" );" );
   }
-  
+
+  private void writeKnownStyles() {
+    StringBuilder script = new StringBuilder( "rap.styles = [ " );
+    if( knownStyles != null ) {
+      for( int i = 0; i < knownStyles.length; i++ ) {
+        script.append( getScriptNewStyle( knownStyles[ i ] ) );
+        if( i != knownStyles.length - 1 ) {
+          script.append( ',' );
+        }
+      }
+      script.append( " ];" );      
+    }
+    evalOnLoad( script.toString() );
+  }
+
   /////////
   // helper
   
@@ -148,24 +170,42 @@ public class CKEditor extends Composite {
     };
   }
 
-  private void evaluate( String script ) {
+  private void evalOnReady( String script ) {
     if( ready ) {
       browser.evaluate( "rap.editor.focus();" + script );
     } else {
-      if( evalScript == null ) {
-        evalScript = new StringBuilder( "rap.editor.focus();" );
+      if( onReadyScript == null ) {
+        onReadyScript = new StringBuilder( "rap.editor.focus();" );
       } 
-      evalScript.append(  script );
+      onReadyScript.append(  script );
     }
   }  
   
-  private void writePendingScript() {
-    if( evalScript != null ) {
-      browser.evaluate( evalScript.toString() );
-      evalScript = null;
+  private void evalOnLoad( String script ) {
+    if( loaded ) {
+      browser.evaluate( script );
+    } else {
+      if( onLoadScript == null ) {
+        onLoadScript = new StringBuilder();
+      } 
+      onLoadScript.append( script );
+    }
+  }  
+  
+  private void evalOnReadyScript() {
+    if( onReadyScript != null ) {
+      browser.evaluate( onReadyScript.toString() );
+      onReadyScript = null;
     }
   }
 
+  private void evalOnLoadScript() {
+    if( onLoadScript != null ) {
+      browser.evaluate( onLoadScript.toString() );
+      onLoadScript = null;
+    }
+  }
+  
   private String getCssFont() {
     StringBuilder result = new StringBuilder();
     if( getFont() != null ) {
@@ -177,16 +217,8 @@ public class CKEditor extends Composite {
     return result.toString();
   }
 
-  private String getScriptSetText() {
-    return "rap.editor.setData( \"" + escapeText( text ) + "\" );";
-  }
-
-  private String getScriptApplyStyle( Style style ) {
-    StringBuilder code = new StringBuilder();
-    code.append( "var style = new CKEDITOR.style( " );
-    code.append( style.toJSON() );
-    code.append( " );style.apply( rap.editor.document );" );
-    return code.toString();
+  private String getScriptNewStyle( Style style ) {
+    return "new CKEDITOR.style( " + style.toJSON() + " )";    
   }
 
   private static String escapeText( String text ) {

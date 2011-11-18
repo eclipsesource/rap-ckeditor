@@ -305,6 +305,39 @@ public class CKEditor_Test extends TestCase {
     String expected = "setStyle( \"font\", \"13pt \\\"courier new\\\"";
     verify( editor.browser, times( 1 ) ).evaluate( contains( expected ) );
   }
+
+  public void testSetKnownStyles() {
+    mockBrowser( editor );
+    editor.onLoad();    
+    
+    editor.setKnownStyles( new Style[]{ new Style( "b" ), new Style( "u" ) } );
+    
+    String expected = "rap.styles = [ new CKEDITOR.style( {";
+    verify( editor.browser, times( 1 ) ).evaluate( contains( expected ) );
+    verify( editor.browser, times( 1 ) ).evaluate( contains( "\"element\":\"b\"" ) );
+    verify( editor.browser, times( 1 ) ).evaluate( contains( "\"element\":\"u\"" ) );
+  }
+
+  public void testSetKnownStylesBeforeLoad() {
+    mockBrowser( editor );
+    
+    editor.setKnownStyles( new Style[]{ new Style( "b" ), new Style( "u" ) } );
+    
+    String expected = "rap.styles = [ new CKEDITOR.style( {";
+    verify( editor.browser, times( 0 ) ).evaluate( contains( expected ) );
+  }
+  
+  public void testSetKnownStylesRenderAtLoad() {
+    mockBrowser( editor );
+    
+    editor.setKnownStyles( new Style[]{ new Style( "b" ), new Style( "u" ) } );
+    editor.onLoad();    
+    
+    String expected = "rap.styles = [ new CKEDITOR.style( {";
+    verify( editor.browser, times( 1 ) ).evaluate( contains( expected ) );
+    verify( editor.browser, times( 1 ) ).evaluate( contains( "\"element\":\"b\"" ) );
+    verify( editor.browser, times( 1 ) ).evaluate( contains( "\"element\":\"u\"" ) );
+  }
   
   /////////
   // Helper
