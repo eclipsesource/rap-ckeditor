@@ -33,8 +33,8 @@ public class CKEditor extends Composite {
   private StringBuilder onLoadScript = null;
   private Style[] knownStyles;
   Browser browser;
-  boolean loaded = false;
-  boolean ready = false;
+  boolean clientLoaded = false;
+  boolean clientReady = false;
 
   
   public CKEditor( Composite parent, int style ) {
@@ -71,26 +71,30 @@ public class CKEditor extends Composite {
   // API
 
   public void setText( String text ) {
+    checkWidget();
     if( text == null ) {
       SWT.error( SWT.ERROR_NULL_ARGUMENT );
     }
     this.text = text;
-    this.ready = false;
+    this.clientReady = false;
     onReadyScript = null;
     writeText();
   }
 
   public String getText() {
+    checkWidget();
     readText();
     return text;
   }
 
   public void setKnownStyles( Style[] styles ) {
+    checkWidget();
     knownStyles = styles;
     writeKnownStyles();      
   }
 
   public void applyStyle( Style style ) {
+    checkWidget();
     // TODO [tb] : support applyStyle, removeFormat, removeStyle before ready
     if( style == null ) {
       SWT.error( SWT.ERROR_NULL_ARGUMENT );
@@ -103,6 +107,7 @@ public class CKEditor extends Composite {
   }
 
   public void removeFormat() {
+    checkWidget();
     evalOnReady( "rap.editor.execCommand( \"removeFormat\" );" );
   }
 
@@ -110,17 +115,17 @@ public class CKEditor extends Composite {
   // browser IO
   
   void onLoad() {
-    if( loaded ) {
+    if( clientLoaded ) {
       throw new IllegalStateException( "Document loaded twice" ); 
     }
     evalOnLoadScript();
-    loaded = true;
+    clientLoaded = true;
   }
   
   void onReady() {
     writeFont(); // CKEditor re-creates the document with every setData, loosing inline styles
     evalOnReadyScript();
-    ready = true;
+    clientReady = true;
   }
 
   private void writeText() {
@@ -128,7 +133,7 @@ public class CKEditor extends Composite {
   }
 
   private void readText() {
-    if( ready ) {
+    if( clientReady ) {
       text = ( String )browser.evaluate( "return rap.editor.getData();" );
     }
   }
@@ -141,9 +146,11 @@ public class CKEditor extends Composite {
     StringBuilder script = new StringBuilder( "rap.styles = [ " );
     if( knownStyles != null ) {
       for( int i = 0; i < knownStyles.length; i++ ) {
-        script.append( getScriptNewStyle( knownStyles[ i ] ) );
-        if( i != knownStyles.length - 1 ) {
-          script.append( ',' );
+        if( knownStyles[ i ] != null ) {
+          script.append( getScriptNewStyle( knownStyles[ i ] ) );
+          if( i != knownStyles.length - 1 ) {
+            script.append( ',' );
+          }          
         }
       }
       script.append( " ];" );      
@@ -171,7 +178,7 @@ public class CKEditor extends Composite {
   }
 
   private void evalOnReady( String script ) {
-    if( ready ) {
+    if( clientReady ) {
       browser.evaluate( "rap.editor.focus();" + script );
     } else {
       if( onReadyScript == null ) {
@@ -182,7 +189,7 @@ public class CKEditor extends Composite {
   }  
   
   private void evalOnLoad( String script ) {
-    if( loaded ) {
+    if( clientLoaded ) {
       browser.evaluate( script );
     } else {
       if( onLoadScript == null ) {
@@ -211,7 +218,7 @@ public class CKEditor extends Composite {
     if( getFont() != null ) {
       FontData data = getFont().getFontData()[ 0 ];
       result.append( data.getHeight() );
-      result.append( "pt " );
+      result.append( "px " );
       result.append( escapeText( data.getName() ) );
     }
     return result.toString();

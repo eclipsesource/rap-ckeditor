@@ -62,24 +62,24 @@ public class CKEditor_Test extends TestCase {
   }
 
   public void testIsInitiallyNotLoaded() {
-    assertFalse( editor.loaded );
+    assertFalse( editor.clientLoaded );
   }
   
   public void testIsInitiallyNotReady() {
-    assertFalse( editor.ready );
+    assertFalse( editor.clientReady );
   }
 
   public void testIsLoadedOnLoad() {
     mockBrowser( editor );
     editor.onLoad();
-    assertTrue( editor.loaded );
+    assertTrue( editor.clientLoaded );
   }
 
   public void testIsReadyOnReady() {
     mockBrowser( editor );
     editor.onLoad();
     editor.onReady();
-    assertTrue( editor.ready );
+    assertTrue( editor.clientReady );
   }
   
   public void testSetText() {
@@ -291,7 +291,7 @@ public class CKEditor_Test extends TestCase {
 
     editor.setFont( new Font( display, "fantasy", 13, 0 ) );
     
-    String expected = "setStyle( \"font\", \"13pt fantasy";
+    String expected = "setStyle( \"font\", \"13px fantasy";
     verify( editor.browser, times( 1 ) ).evaluate( contains( expected ) );
   }
   
@@ -302,7 +302,7 @@ public class CKEditor_Test extends TestCase {
     
     editor.setFont( new Font( display, "\"courier new\"", 13, 0 ) );
     
-    String expected = "setStyle( \"font\", \"13pt \\\"courier new\\\"";
+    String expected = "setStyle( \"font\", \"13px \\\"courier new\\\"";
     verify( editor.browser, times( 1 ) ).evaluate( contains( expected ) );
   }
 
