@@ -326,7 +326,7 @@ public class CKEditor_Test extends TestCase {
     String expected = "rap.styles = [ new CKEDITOR.style( {";
     verify( editor.browser, times( 0 ) ).evaluate( contains( expected ) );
   }
-  
+
   public void testSetKnownStylesRenderAtLoad() {
     mockBrowser( editor );
     
@@ -338,7 +338,25 @@ public class CKEditor_Test extends TestCase {
     verify( editor.browser, times( 1 ) ).evaluate( contains( "\"element\":\"b\"" ) );
     verify( editor.browser, times( 1 ) ).evaluate( contains( "\"element\":\"u\"" ) );
   }
-  
+
+  public void testgetActiveStyles() {
+    mockBrowser( editor );
+    editor.onLoad();
+    editor.onReady();
+    Style[] styles = new Style[]{ new Style( "b" ), new Style( "u" ), new Style( "x" ) };
+    editor.setKnownStyles( styles );
+    String response = "[ 0, 2 ]";
+    String expected = "rap.getActiveStyles()";
+    when( editor.browser.evaluate( contains( expected ) ) ).thenReturn( response );
+    
+    Style[] result = editor.getActiveStyles();
+    
+    verify( editor.browser, times( 1 ) ).evaluate( contains( expected ) );
+    assertEquals( 2, result.length );
+    assertEquals( styles[ 0 ], result[ 0 ] );
+    assertEquals( styles[ 2 ], result[ 1 ] );
+  }
+
   /////////
   // Helper
 

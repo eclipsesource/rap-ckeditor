@@ -2,6 +2,27 @@
 <head>
 	<script type="text/javascript" src="/resources/ckeditor.js"></script>
 	<script type="text/javascript">
+	  if( typeof JSON === "undefined" ) {
+	    JSON = {};
+	    JSON.stringify = function (obj) {  
+        var t = typeof (obj);  
+        if (t != "object" || obj === null) {  
+          // simple data type  
+          if (t == "string") obj = '"'+obj+'"';  
+            return String(obj);  
+          } else {  
+            // recurse array or object  
+            var n, v, json = [], arr = (obj && obj.constructor == Array);  
+            for (n in obj) {  
+              v = obj[n]; t = typeof(v);  
+              if (t == "string") v = '"'+v+'"';  
+                else if (t == "object" && v !== null) v = JSON.stringify(v);  
+              json.push((arr ? "" : '"' + n + '":') + String(v));  
+            }  
+          return (arr ? "[" : "{") + String(json) + (arr ? "]" : "}");  
+          }  
+        };    
+      }
       rap = {};
       rap.init = false;
       rap.styles = [];
@@ -22,6 +43,16 @@
             alert( "CKEditor ready error:  " + ex );
           }
         } );
+        rap.getActiveStyles = function() {
+          var result = [];
+          var path = new CKEDITOR.dom.elementPath( rap.editor.getSelection().getStartElement() );
+          for( var i = 0; i < this.styles.length; i++ ) {
+            if( this.styles[ i ].checkActive( path ) ) {
+              result.push( i );
+            }
+          }
+          return JSON.stringify( result );
+        }
       }
 	</script>
 </head>

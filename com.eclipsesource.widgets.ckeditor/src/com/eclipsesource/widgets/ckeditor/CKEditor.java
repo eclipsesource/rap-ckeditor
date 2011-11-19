@@ -21,6 +21,8 @@ import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Layout;
+import org.json.JSONArray;
+import org.json.JSONException;
 
 
 
@@ -31,7 +33,8 @@ public class CKEditor extends Composite {
   private String text = "";
   private StringBuilder onReadyScript = null;
   private StringBuilder onLoadScript = null;
-  private Style[] knownStyles;
+  private Style[] knownStyles = new Style[ 0 ];
+  private Style[] activeStyles;
   Browser browser;
   boolean clientLoaded = false;
   boolean clientReady = false;
@@ -89,7 +92,11 @@ public class CKEditor extends Composite {
 
   public void setKnownStyles( Style[] styles ) {
     checkWidget();
-    knownStyles = styles;
+    if( styles == null ) {
+      knownStyles = new Style[ 0 ];
+    } else {
+      knownStyles = styles;
+    }
     writeKnownStyles();      
   }
 
@@ -109,6 +116,12 @@ public class CKEditor extends Composite {
   public void removeFormat() {
     checkWidget();
     evalOnReady( "rap.editor.execCommand( \"removeFormat\" );" );
+  }
+
+  public Style[] getActiveStyles() {
+    checkWidget();
+    readActiveStyles();
+    return activeStyles;
   }
 
   /////////////
@@ -138,6 +151,21 @@ public class CKEditor extends Composite {
     }
   }
 
+  private void readActiveStyles() {
+    if( clientReady ) {
+      try {
+        String result = ( String )browser.evaluate( "return rap.getActiveStyles();" );
+        JSONArray arr = new JSONArray( result );
+        activeStyles = new Style[ arr.length() ];
+        for( int i = 0; i < activeStyles.length; i++ ) {
+          activeStyles[ i ] = knownStyles[ arr.getInt( i ) ];
+        }
+      } catch( JSONException e ) {
+        throw new RuntimeException( "invalid json" );
+      }
+    }    
+  }
+
   private void writeFont() {
     evalOnReady( "rap.editor.document.getBody().setStyle( \"font\", \"" + getCssFont() + "\" );" );
   }
@@ -160,7 +188,7 @@ public class CKEditor extends Composite {
 
   /////////
   // helper
-  
+
   private void addBrowserHandler() {
     browser.addProgressListener( new ProgressListener() {
       public void completed( ProgressEvent event ) {

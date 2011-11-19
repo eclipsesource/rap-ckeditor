@@ -43,6 +43,14 @@ public class CkEditorDemo implements IEntryPoint {
     // CkEditor
     final CKEditor ckEditor = new CKEditor( shell, SWT.BORDER );
     ckEditor.setText( "bala<i>\"la\\la\"</i>la\r\nfoooo" );
+    ckEditor.setKnownStyles( new Style[] {
+      Style.BOLD,
+      Style.ITALIC,
+      Style.STRIKE,
+      Style.SUBSCRIPE,
+      Style.SUPERSCRIPE,
+      Style.UNDERLINE
+    } );
     ckEditor.applyStyle( Style.STRIKE );
     ckEditor.setLayoutData( new GridData() );
     System.out.println( ckEditor.getText() );
@@ -128,6 +136,27 @@ public class CkEditorDemo implements IEntryPoint {
     clearBtn.addSelectionListener( new SelectionAdapter() {
       public void widgetSelected( SelectionEvent e ) {
         ckEditor.setText( "" );
+      }
+    } );
+    ToolItem activeBtn = new ToolItem( toolbar, SWT.NONE );
+    activeBtn.setText( "actives" );
+    activeBtn.addSelectionListener( new SelectionAdapter() {
+      public void widgetSelected( SelectionEvent e ) {
+        Style[] actives = ckEditor.getActiveStyles();
+        System.out.println( "---" );
+        for( int i = 0; i < actives.length; i++ ) {
+          if( actives[ i ] == Style.BOLD ) {
+            System.out.println( "Bold" );
+          } else if( actives[ i ] == Style.ITALIC ) {
+            System.out.println( "Italic" );
+          } else if( actives[ i ] == Style.STRIKE ) {
+            System.out.println( "Strike" );
+          } else if( actives[ i ] == Style.SUBSCRIPE ) {
+            System.out.println( "Suberscripe" );
+          } else if( actives[ i ] == Style.UNDERLINE ) {
+            System.out.println( "Underline" );
+          }
+        }
       }
     } );
     shell.open();
