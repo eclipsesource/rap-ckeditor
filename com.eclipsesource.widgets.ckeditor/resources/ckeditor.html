@@ -2,6 +2,7 @@
 <head>
 	<script type="text/javascript" src="/resources/ckeditor.js"></script>
 	<script type="text/javascript">
+
 	  if( typeof JSON === "undefined" ) {
 	    JSON = {};
 	    JSON.stringify = function (obj) {  
@@ -23,10 +24,27 @@
           }  
         };    
       }
+
       rap = {};
       rap.init = false;
       rap.styles = [];
-	  rap.createEditor = function() {
+
+      rap.getActiveStyles = function() {
+        var result = [];
+        var path = new CKEDITOR.dom.elementPath( rap.editor.getSelection().getStartElement() );
+        for( var i = 0; i < this.styles.length; i++ ) {
+          if( this.styles[ i ].checkActive( path ) ) {
+            result.push( i );
+          }
+        }
+        return JSON.stringify( result );
+      }
+
+      rap.update = function( field ) {
+        console.log( field );
+      };
+
+      rap.createEditor = function() {
         rap.editor = CKEDITOR.appendTo( document.body );
         rap.editor.on( "uiReady", function() {
           rap.editor.getThemeSpace( "top" ).hide();
@@ -35,24 +53,20 @@
           if( !rap.init ) {
             rap.init = true;
             // NOTE [tb] : does not work in uiReady for some reason:
-	        rap.editor.execCommand( "maximize" ); 
-	      }
+            rap.editor.execCommand( "maximize" ); 
+          }
           try {
             rap_ready();
           } catch( ex ) {
             alert( "CKEditor ready error:  " + ex );
           }
         } );
-        rap.getActiveStyles = function() {
-          var result = [];
-          var path = new CKEDITOR.dom.elementPath( rap.editor.getSelection().getStartElement() );
-          for( var i = 0; i < this.styles.length; i++ ) {
-            if( this.styles[ i ].checkActive( path ) ) {
-              result.push( i );
-            }
-          }
-          return JSON.stringify( result );
-        }
+        rap.editor.on( "selectionChange", function() {
+          rap.update( "activeStyles" );
+        } );        
+        rap.editor.on( "key", function() {
+          rap.update( "key" );
+        } );        
       }
 	</script>
 </head>
