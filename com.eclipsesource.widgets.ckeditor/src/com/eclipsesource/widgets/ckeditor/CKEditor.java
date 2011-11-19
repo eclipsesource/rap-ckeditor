@@ -34,7 +34,7 @@ public class CKEditor extends Composite {
   private StringBuilder onReadyScript = null;
   private StringBuilder onLoadScript = null;
   private Style[] knownStyles = new Style[ 0 ];
-  private Style[] activeStyles;
+  private Style[] activeStyles = new Style[ 0 ];
   Browser browser;
   boolean clientLoaded = false;
   boolean clientReady = false;
@@ -81,6 +81,7 @@ public class CKEditor extends Composite {
     this.text = text;
     this.clientReady = false;
     onReadyScript = null;
+    activeStyles = new Style[ 0 ];
     writeText();
   }
 
