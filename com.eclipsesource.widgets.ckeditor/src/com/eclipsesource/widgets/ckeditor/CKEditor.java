@@ -127,7 +127,7 @@ public class CKEditor extends Composite {
 
   /////////////
   // browser IO
-  
+
   void onLoad() {
     if( clientLoaded ) {
       throw new IllegalStateException( "Document loaded twice" ); 
@@ -135,7 +135,7 @@ public class CKEditor extends Composite {
     evalOnLoadScript();
     clientLoaded = true;
   }
-  
+
   void onReady() {
     writeFont(); // CKEditor re-creates the document with every setData, loosing inline styles
     evalOnReadyScript();
