@@ -40,8 +40,8 @@
         return JSON.stringify( result );
       }
 
-      rap.update = function( field ) {
-        console.log( field );
+      rap.update = function() {
+        console.log( "updating" );
       };
 
       rap.createEditor = function() {
@@ -55,19 +55,23 @@
             // NOTE [tb] : does not work in uiReady for some reason:
             rap.editor.execCommand( "maximize" ); 
           }
+          rap.editor.on( "mousedown", function() {
+            rap.update();
+          } );
+          rap.editor.on( "mouseup", function() {
+            rap.update();
+          } );
           try {
             rap_ready();
           } catch( ex ) {
             alert( "CKEditor ready error:  " + ex );
           }
         } );
-        rap.editor.on( "selectionChange", function() {
-          rap.update( "activeStyles" );
-        } );        
         rap.editor.on( "key", function() {
-          rap.update( "key" );
-        } );        
+          rap.update();
+        } );
       }
+
 	</script>
 </head>
 <body>
