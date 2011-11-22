@@ -27,6 +27,8 @@
 
       rap = {};
       rap.init = false;
+      rap.sync = true;
+      rap._timer = null;
       rap.styles = [];
 
       rap.getActiveStyles = function() {
@@ -41,8 +43,21 @@
       }
 
       rap.update = function() {
-        console.log( "updating" );
+        if( rap.sync ) {
+          console.log( "updating" );
+          rap.sync = false;
+        }
+        if( rap._timer != null ) {
+          window.clearTimeout( rap._timer );
+        }
+        rap._timer = window.setTimeout( rap._update, 1000 );
       };
+      
+      rap._update = function() {
+        console.log( "updated" );
+        rap.sync = true;
+        rap._timer = null;
+      }
 
       rap.createEditor = function() {
         rap.editor = CKEDITOR.appendTo( document.body );
@@ -55,20 +70,11 @@
             // NOTE [tb] : does not work in uiReady for some reason:
             rap.editor.execCommand( "maximize" ); 
           }
-          rap.editor.on( "mousedown", function() {
-            rap.update();
-          } );
-          rap.editor.on( "mouseup", function() {
-            rap.update();
-          } );
           try {
             rap_ready();
           } catch( ex ) {
             alert( "CKEditor ready error:  " + ex );
           }
-        } );
-        rap.editor.on( "key", function() {
-          rap.update();
         } );
       }
 
