@@ -8,29 +8,24 @@
  * Contributors:
  *    EclipseSource - initial API and implementation
  ******************************************************************************/
-package org.eclipse.rap.demo.ckeditor.internal;
 
-import org.eclipse.rap.examples.IExampleContribution;
-import org.eclipse.rap.examples.IExamplePage;
+package com.eclipsesource.widgets.ckeditor.demo.internal;
+
+import java.util.HashMap;
+import java.util.Map;
+
 import org.eclipse.rwt.application.Application;
+import org.eclipse.rwt.application.ApplicationConfiguration;
+import org.eclipse.rwt.client.WebClient;
+
+import com.eclipsesource.widgets.ckeditor.demo.CkEditorDemo;
 
 
-public class CKEditorExampleContribution implements IExampleContribution {
-
-  public String getId() {
-    return "ckeditor";
-  }
-
-  public String getTitle() {
-    return "Rich Text Editor";
-  }
-
-  public IExamplePage createPage() {
-    return new CKEditorExamplePage();
-  }
+public class CKEditorDemoConfiguration implements ApplicationConfiguration {
 
   public void configure( Application application ) {
-    // TODO Auto-generated method stub
-    
+    Map<String, String> map = new HashMap<String, String>();
+    map.put( WebClient.PAGE_TITLE, "CKEditor Demo" );
+    application.addEntryPoint( "/ckeditor", CkEditorDemo.class, map );
   }
 }

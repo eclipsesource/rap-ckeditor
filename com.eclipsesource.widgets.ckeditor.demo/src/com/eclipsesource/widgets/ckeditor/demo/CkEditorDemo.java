@@ -1,14 +1,14 @@
 /*******************************************************************************
- * Copyright (c) 2002, 2011 Innoopract Informationssysteme GmbH.
+ * Copyright (c) 2012 EclipseSource and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- * 
+ *
  * Contributors:
- *    Innoopract Informationssysteme GmbH - initial API and implementation
- *    EclipseSource - ongoing development
+ *    EclipseSource - initial API and implementation
  ******************************************************************************/
+
 package com.eclipsesource.widgets.ckeditor.demo;
 
 import org.eclipse.jface.layout.GridDataFactory;
@@ -24,6 +24,7 @@ import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
 
 import com.eclipsesource.widgets.ckeditor.CKEditor;
+import com.eclipsesource.widgets.ckeditor.CKEditorCallback;
 
 
 public class CkEditorDemo implements IEntryPoint {
@@ -38,9 +39,8 @@ public class CkEditorDemo implements IEntryPoint {
     // CkEditor
     final CKEditor ckEditor = new CKEditor( shell, SWT.NONE );
     ckEditor.setFont( new org.eclipse.swt.graphics.Font( display, "fantasy", 13, 0 ) );
-    ckEditor.setText( "asdf<script type=\"text/javascript\"> alert(1);</script>asdf" );
+    ckEditor.setText( "This is awsome text!" );
     ckEditor.setLayoutData( new GridData() );
-    System.out.println( ckEditor.getText() );
     ckEditor.setBackground( display.getSystemColor( SWT.COLOR_YELLOW ) );
     GridDataFactory.fillDefaults().grab( true, true ).applyTo( ckEditor );
     ToolBar toolbar = new ToolBar( shell, SWT.FLAT );
@@ -48,7 +48,11 @@ public class CkEditorDemo implements IEntryPoint {
     printBtn.setText( "Print" );
     printBtn.addSelectionListener( new SelectionAdapter() {
       public void widgetSelected( SelectionEvent e ) {
-        System.out.println( ckEditor.getText() );
+        ckEditor.getText( new CKEditorCallback() {
+          public void handleGetText( String result ) {
+            System.out.println( result );
+          }
+        } );
       }
     } );
     ToolItem fontBtn = new ToolItem( toolbar, SWT.PUSH );
@@ -66,15 +70,7 @@ public class CkEditorDemo implements IEntryPoint {
       }
     } );
     shell.open();
-    runReadAndDispatchLoop( shell );
     return 0;
   }
 
-  private void runReadAndDispatchLoop( Shell shell ) {
-    while( !shell.isDisposed() ) {
-      if( !shell.getDisplay().readAndDispatch() ) {
-        shell.getDisplay().sleep();
-      }
-    }
-  }
 }

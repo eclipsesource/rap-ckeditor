@@ -4,7 +4,7 @@
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- * 
+ *
  * Contributors:
  *    EclipseSource - initial API and implementation
  ******************************************************************************/
@@ -12,9 +12,14 @@ package com.eclipsesource.widgets.ckeditor;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInputStream.GetField;
 
 import org.eclipse.rwt.RWT;
+import org.eclipse.rwt.application.ApplicationRunner;
+import org.eclipse.rwt.internal.lifecycle.SimpleLifeCycle;
 import org.eclipse.rwt.resources.IResourceManager;
+import org.eclipse.rwt.widgets.BrowserCallback;
+import org.eclipse.rwt.widgets.BrowserUtil;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.browser.BrowserFunction;
@@ -25,7 +30,11 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Layout;
 
 
+
 public class CKEditor extends Composite {
+
+
+  private static final String SCRIPT_GET_TEXT = "return rap.editor.getData();";
 
   private static final String RESOURCES_PATH = "resources/";
   private static final String REGISTER_PATH = "ckeditor/";
@@ -42,7 +51,7 @@ public class CKEditor extends Composite {
     "skins/kama/images/sprites.png",
     "skins/kama/images/sprites_ie6.png"
   };
-  
+
   private String text = "";
   Browser browser;
   boolean clientReady = false;
@@ -110,14 +119,35 @@ public class CKEditor extends Composite {
       SWT.error( SWT.ERROR_NULL_ARGUMENT );
     }
     this.text = text;
-    writeText();          
+    writeText();
     clientReady = false; // order is important
   }
 
+  /**
+   * @deprecated Not compatible with JEE compatibility mode. Use
+   * {@link CKEditor#getText(CKEditorCallback)} instead.
+   * @return
+   */
   public String getText() {
     checkWidget();
-    readText();
+    try {
+      readText();
+    } catch( UnsupportedOperationException ex ) {
+      String msg = ex + " Use getText(CKEditorCallback).";
+      throw new UnsupportedOperationException( msg );
+    }
     return text;
+  }
+
+  public void getText( final CKEditorCallback ckEditorCallback ) {
+    BrowserUtil.evaluate( browser, SCRIPT_GET_TEXT, new BrowserCallback() {
+      public void evaluationSucceeded( Object result ) {
+        ckEditorCallback.handleGetText( ( String )result );
+      }
+      public void evaluationFailed( Exception exception ) {
+        throw new RuntimeException( exception );
+      }
+    } );
   }
 
   //////////////
@@ -139,7 +169,7 @@ public class CKEditor extends Composite {
 
   private void readText() {
     if( clientReady ) {
-      text = ( String )browser.evaluate( "return rap.editor.getData();" );
+      text = ( String )browser.evaluate( SCRIPT_GET_TEXT );
     }
   }
 
@@ -157,7 +187,7 @@ public class CKEditor extends Composite {
 
   private void evalOnReady( String script ) {
     if( clientReady ) {
-      browser.evaluate( script );
+      executeScript( script );
     } else {
       if( scriptBuffer == null ) {
         scriptBuffer = new StringBuilder();
@@ -168,8 +198,23 @@ public class CKEditor extends Composite {
 
   private void evalScriptBuffer() {
     if( scriptBuffer != null ) {
-      browser.evaluate( scriptBuffer.toString() );
+      executeScript( scriptBuffer.toString() );
       scriptBuffer = null;
+    }
+  }
+
+  private void executeScript( String script ) {
+    try {
+      browser.evaluate( script );
+    } catch( UnsupportedOperationException ex ) {
+      BrowserUtil.evaluate( browser, script, new BrowserCallback() {
+        public void evaluationSucceeded( Object result ) {
+          // nothing to do
+        }
+        public void evaluationFailed( Exception exception ) {
+          throw new RuntimeException( exception );
+        }
+      } );
     }
   }
 
@@ -183,9 +228,9 @@ public class CKEditor extends Composite {
     }
     return result.toString();
   }
-  
+
   private static String escapeText( String text ) {
-    // escaping backslashes, double-quotes, newlines, and carriage-return 
+    // escaping backslashes, double-quotes, newlines, and carriage-return
     StringBuilder result = new StringBuilder();
     for( int i = 0; i < text.length(); i++ ) {
       char ch = text.charAt( i );
