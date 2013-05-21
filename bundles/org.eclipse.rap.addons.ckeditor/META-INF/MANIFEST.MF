@@ -1,12 +1,11 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: CKEditor widget
+Bundle-Name: CKEditor
 Bundle-SymbolicName: org.eclipse.rap.addons.ckeditor
-Bundle-Version: 1.0.0.qualifier
-Bundle-ActivationPolicy: lazy
+Bundle-Version: 0.0.1.qualifier
 Bundle-RequiredExecutionEnvironment: J2SE-1.5
 Import-Package: javax.servlet;version="2.5.0",
  javax.servlet.http;version="2.5.0"
 Export-Package: org.eclipse.rap.addons.ckeditor;version="1.0.0"
-Bundle-Vendor: EclipseSource
+Bundle-Vendor: Eclipse.org - RAP Incubator
 Require-Bundle: org.eclipse.rap.rwt;bundle-version="[2.1.0,3.0.0)"
