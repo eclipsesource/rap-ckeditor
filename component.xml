@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component>
+  <name>
+    CKEditor
+  </name>
+  <maintainer>
+    Tim Buschtöns
+  </maintainer>
+  <description>
+    <p>
+      This is a custom widget for RAP that wraps the CKEditor, a web-based WYSIWYG/Rich-Text editor. 
+	  It is compatible with RAP 2.1 or higher and based on CKEditor version 3.6.6.1.
+    </p>
+    <p>
+      To custimize the editor, view the readme.txt in the <code>org.eclipse.rap.addons.ckeditor.build</code> bundle.
+    </p>
+  </description>
+</component>
