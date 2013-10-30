@@ -67,7 +67,7 @@ span.cke_skin_kama {
   -moz-border-radius: 5px;
   -webkit-border-radius: 5px;
   border-radius: 5px;
-  border: 1px solid transparent;
+  border: 0px solid transparent;
   padding: 0px;
 }
 
@@ -134,7 +134,7 @@ span.cke_skin_kama {
 }
 
 .cke_skin_kama .cke_focus {
-  outline: auto 5px -webkit-focus-ring-color;
+  /*outline: auto 5px -webkit-focus-ring-color;*/
 }
 
 .cke_skin_kama textarea.cke_source {
